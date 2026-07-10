@@ -1,0 +1,265 @@
+<div id="report-div">
+    <table cellspacing="0" cellpadding="0"
+        style="height:800px;width:700px;margin:0 auto;border-color: #000000;background-color: #ffffff;" border="1">
+        <tbody>
+            <tr>
+                <td height="100">
+                    <table cellspacing="1" cellpadding="1" width="100%" border="0">
+                        <tbody>
+                            <tr>
+                                <td align="center" height="30">
+                                    <span class="rptlblCmpName">{{table0.HEADING_1}} </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" height="10">
+                                    <span class="rptlblCmpAdd" >{{table0.HEADING_2}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" height="20">
+                                    <span  class="rptlblCmpAdd">{{table0.HEADING_3}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" height="20">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border-top: black 1px solid; height: 20px" align="center" height="20">
+                                    &nbsp;
+                                    <table cellspacing="1" cellpadding="1" width="100%" border="0">
+                                        <tbody>
+                                            <tr>
+                                                <td align="right" width="45%" colspan="1" rowspan="1">
+                                                    <span class="rptlblHeader">Job No : </span>
+                                                </td>
+                                                <td>
+                                                </td>
+                                                <td>
+                                                    <span class="rptlblHeader">{{JobNo}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" width="45%" colspan="3">
+                                                    <span class="rptlblHeader">Client Name :</span>&nbsp;&nbsp;
+                                                    <span class="rptlblHeader">{{table1.EXP_NAME}}</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="border-top: black 1px solid; height: 25px" bordercolor="#000070" align="center" height="25">
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="padding:20px; height: 50px" height="50">
+                    <table cellspacing="1" cellpadding="1" border="0">
+                        <tbody>
+                            <tr>
+                                <td align="right" width="20%" colspan="1" rowspan="1">
+                                    <span class="rptlblHeader">Bill No. :</span>
+                                </td>
+                                <td>
+                                    <span class="rptlblNormal">{{table1.INV_NO}}</span>
+                                </td>
+                                <td align="right">
+                                    <span class="rptlblHeader">Date :</span>
+                                </td>
+                                <td>
+                                    <span class="rptlblNormal">{{table1.INV_DATE}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+
+                                </td>
+                                <td colspan="3">
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+                                    <span class="rptlblHeader">Packages :</span>
+                                </td>
+                                <td>
+                                    <span class="rptlblNormal">{{table1.INV_PKGS}}</span>
+                                </td>
+                                <td align="right">
+                                    <span class="rptlblHeader">Weighting :</span>
+                                </td>
+                                <td>
+                                    <span class="rptlblNormal">{{table1.INV_WT}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+                                    <span class="rptlblHeader">Vessel/Airline :</span>
+                                </td>
+                                <td>
+                                    <span class="rptlblNormal">{{table1.INV_CARRIER}}</span>
+                                </td>
+                                <td align="right">
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td height="500" style="padding:30px;height:500px;" >
+                    <table cellspacing="0" cellpadding="0" align="center" width="100%">
+                        <tbody>
+                            <tr *ngFor="let data of table2">
+                                <td>
+                            <tr>
+                                <td style="padding:15px 0">
+                                    <span
+                                        class="rptlblHeader">{{data.ACCTCODE}}&nbsp;&nbsp;&nbsp;&nbsp;{{data.ACCTNAME}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td  width="100%">
+                                    <table BORDER=1 RULES=ROWS FRAME=BOX class="tabledata" cellspacing="0" cellpadding="0" width="100%">
+                                        <thead>
+                                            <tr style="font-family:Arial;font-size:9pt;font-weight:bold;">
+                                                <td style="width:50px;">&nbsp;</td>
+                                                <td style="width:250px;">&nbsp;</td>
+                                                <td align="left" valign="top" style="width:80px;">Date</td>
+                                                <td align="right" valign="top" style="width:120px;">Debit
+                                                </td>
+                                                <td align="right" valign="top" style="width:150px;">Credit
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let data1 of table3" style="font-family:Arial;font-size:8pt;">
+                                                <ng-container *ngIf="data.ACCTCODE == data1.TACCTCODE">
+                                                    <td align="left" valign="top">&nbsp;{{data1.TTYPE}}</td>
+                                                    <td align="left" valign="top" style="font-weight: bold;" (click)="invoiceprint(data1.TCODE,data1.TTYPE)"><b>{{data1.TCODE}}</b></td>
+                                                    <td align="left" valign="top">{{data1.TDATE}}</td>
+                                                    <td align="right" valign="top">{{data1.TDRAMT}}</td>
+                                                    <td align="right" valign="top">{{data1.TCRAMT}}</td>
+                                                </ng-container>
+                                            </tr>                                        
+                                                <tr style="font-family:Arial;font-size:8pt;font-weight:bold">                             
+                                                <td align="left" valign="top" colspan="3" style="width: 380px;">&nbsp;{{data.REMARKS}}</td>
+                                                <td align="right" valign="top" >{{data.PAIDAMT}}</td>
+                                                <td align="right" valign="top">{{data.RECOVERYAMT}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                         
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </td>
+    </tr>
+    <tr>
+        <td height="100">
+            <table cellspacing="1" cellpadding="1" width="100%" border="0">
+                <tbody>
+                    <tr>
+                        <td align="left" width="5%" colspan="1" rowspan="1">
+                        </td>
+                        <td align="left" width="20%">
+                            <span class="rptlblHeader">Paid --> </span>&nbsp;
+                            <span class="rptlblHeader">{{table4.GRAND_PAIDAMT}}</span>
+                        </td>
+                        <td align="left" width="25%" colspan="1" rowspan="1">
+                            <span class="rptlblHeader">Recovered --> </span>
+                            <span class="rptlblHeader">{{table4.GRAND_RECOVERYAMT}}</span>&nbsp;
+                        </td>
+                        <td align="left" width="30%" colspan="1" rowspan="1">
+                            <span class="rptlblHeader">{{table4.GRAND_DIFFAMT}}
+                                {{table4.GRAND_REMARKS}}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="border-top: black 1px solid;" cellspacing="1" cellpadding="1" width="100%" border="0">
+
+                <tbody>
+                    <tr>
+                        <td align="left" width="5%" colspan="1" rowspan="1">
+                        </td>
+                        <td style="border-bottom: black 1px solid" align="left" width="15%">
+                            <span id="Label16" class="rptlblHeader">Company </span>&nbsp;
+                        </td>
+                        <td style="border-bottom: black 1px solid" align="left" width="15%">
+                            <span id="Label14" class="rptlblHeader">Paid </span>&nbsp;
+                        </td>
+                        <td style="border-bottom: black 1px solid" align="left" width="15%" colspan="1" rowspan="1">
+                            <span id="Label17" class="rptlblHeader">Recovered </span>
+                        </td>
+                        <td style="border-bottom: black 1px solid" align="left" width="20%" colspan="1" rowspan="1">
+                            <span id="Label20" class="rptlblHeader">Remarks </span>
+                        </td>
+                    </tr>
+                    <tr *ngFor="let data2 of table5">
+                        <td align="left" width="5%" colspan="1" rowspan="1">
+
+                        </td>
+                        <td align="left" width="15%">
+                            <span id="lblMPCLF" class="rptlblHeader">{{data2.ACCTCODE}}</span>&nbsp;
+                        </td>
+                        <td align="left" width="15%">
+                            <span id="lblTotDRAmtMPCLF" class="rptlblHeader">{{data2.GRAND_PAIDAMT}}</span>
+                        </td>
+                        <td align="left" width="15%" colspan="1" rowspan="1">
+                            <span id="lblTotCRAmtMPCLF" class="rptlblHeader">{{data2.GRAND_RECOVERYAMT}}</span>&nbsp;
+                        </td>
+                        <td align="left" width="25%" colspan="1" rowspan="1">
+                            <span id="lblGrandTotMPCLF" class="rptlblHeader">{{data2.GRAND_DIFFAMT}}
+                                &nbsp;&nbsp;{{data2.GRAND_REMARKS}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr *ngFor="let data3 of table6">
+                        <td align="left" width="5%" colspan="1" rowspan="1">
+
+                        </td>
+                        <td align="left" width="15%">
+                            <span id="lblMPCLF" class="rptlblHeader">{{data3.ACCTCODE}}</span>&nbsp;
+                        </td>
+                        <td align="left" width="15%">
+                            <span id="lblTotDRAmtMPCLF" class="rptlblHeader">{{data3.GRAND_PAIDAMT}}</span>
+                        </td>
+                        <td align="left" width="15%" colspan="1" rowspan="1">
+                            <span id="lblTotCRAmtMPCLF" class="rptlblHeader">{{data3.GRAND_RECOVERYAMT}}</span>&nbsp;
+                        </td>
+                        <td align="left" width="25%" colspan="1" rowspan="1">
+                            <span id="lblGrandTotMPCLF" class="rptlblHeader">{{data3.GRAND_DIFFAMT}}
+                                &nbsp;&nbsp;{{data3.GRAND_REMARKS}}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="border-top: black 1px solid; height: 25px" bordercolor="#000070" align="center" height="25">
+        </td>
+    </tr>
+    </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <div class="row no-gutters">
+        <div class="col-12">
+            <input type="button" class="btn btn-md btn-primary" value="Print" (click)="PrintElem()" />
+        </div>
+    </div>
+</div>
