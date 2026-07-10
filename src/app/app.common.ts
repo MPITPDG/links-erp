@@ -156,6 +156,7 @@
                         { menuid: "2.1.2", icon: "fa fa-search-plus", menuname: "Statement", routerlink: "/accounts/Master/Reconcil/Statement", ischild: 'n', parentid: 0, isactive: 1, data: [] },
                         { menuid: "2.1.3", icon: "fa fa-search-plus", menuname: "Upload Statement", routerlink: "/accounts/uploadbankreconcil/uploadStatement", ischild: 'n', parentid: 0, isactive: 1, data: [] },
                         { menuid: "2.1.4", icon: "fa fa-search-plus", menuname: "search", routerlink: "/accounts/uploadbankreconcil/uploadStatementsearch", ischild: 'n', parentid: 0, isactive: 1, data: [] },
+                         { menuid: "2.1.6", icon: "fa fa-search-plus", menuname: "Reconciliation Statement", routerlink: "/accounts/uploadbankreconcil/reconciliationStatement", ischild: 'n', parentid: 0, isactive: 1, data: [] },
                 ]},
             ]},
                 {menuid: "3", icon: "fa fa-money", menuname: "Transaction", routerlink: "", ischild: 'y', parentid: 0, isactive: 1, data: [

@@ -89,7 +89,12 @@ import { IMyDpOptions } from 'mydatepicker';
     CrNotRef:string;
     DrRef:string;
     CrRef:string;
+    DrReflected:string;
+    CrReflected:string;
+    closingcrref:string;
+    closingdrref:string;
     showResult = false;
+    activeTab: string = 'UNCLEARED';
      constructor(private _dataService: DataService,
         private _toasterService: ToastCommonService,
         private loaderService: LoaderService,
@@ -112,8 +117,47 @@ import { IMyDpOptions } from 'mydatepicker';
           this._loaderService.display(false)
         }
 
+        // Uncleared/Cleared membership is snapshotted at search time (_wasCleared),
+        // not read live off CLEARANCEDATE — otherwise a row would jump to the
+        // Cleared tab the instant the user picks a date, before they've submitted.
+        get unclearedList() {
+          return (this.bankreconcilList || []).filter(x => !x._wasCleared);
+        }
+
+        get clearedList() {
+          return (this.bankreconcilList || []).filter(x => !!x._wasCleared);
+        }
+
+        private sumField(list: any[], field: string): number {
+          return (list || []).reduce((total, d) => total + (parseFloat(d[field]) || 0), 0);
+        }
+
+        get unclearedDrTotal(): number {
+          return this.sumField(this.unclearedList, 'DRAMT');
+        }
+
+        get unclearedCrTotal(): number {
+          return this.sumField(this.unclearedList, 'CRAMT');
+        }
+
+        get clearedDrTotal(): number {
+          return this.sumField(this.clearedList, 'DRAMT');
+        }
+
+        get clearedCrTotal(): number {
+          return this.sumField(this.clearedList, 'CRAMT');
+        }
+
+        get activeDrTotal(): number {
+          return this.activeTab === 'UNCLEARED' ? this.unclearedDrTotal : this.clearedDrTotal;
+        }
+
+        get activeCrTotal(): number {
+          return this.activeTab === 'UNCLEARED' ? this.unclearedCrTotal : this.clearedCrTotal;
+        }
+
         get filteredBankreconcilList() {
-          let list = this.bankreconcilList || [];
+          let list = this.activeTab === 'UNCLEARED' ? this.unclearedList : this.clearedList;
           if (this.typeFilter) {
             list = list.filter(x => x.STATUS === this.typeFilter);
           }
@@ -129,8 +173,8 @@ import { IMyDpOptions } from 'mydatepicker';
           return list;
         }
 
-        get selectedCount(): number {
-          return (this.filteredBankreconcilList || []).filter(x => x._selected).length;
+        setActiveTab(tab: string) {
+          this.activeTab = tab;
         }
 
         get differenceLabel(): string {
@@ -151,6 +195,15 @@ import { IMyDpOptions } from 'mydatepicker';
           if (!val) { return 0; }
           const n = parseFloat((val + '').replace(/[^0-9.\-]/g, ''));
           return isNaN(n) ? 0 : n;
+        }
+
+        // Adds thousand separators + 2 decimal places (e.g. 1438393.19 -> "1,438,393.19")
+        // to the raw numbers coming back from the stored proc, before the "Dr"/"Cr"
+        // suffix gets appended in SearchData().
+        private formatAmt(val: any): string {
+          const n = parseFloat(val);
+          if (isNaN(n)) { return val; }
+          return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         
         verifyPermission(formId: any, userMode: any) {
@@ -211,43 +264,66 @@ import { IMyDpOptions } from 'mydatepicker';
                  this._dataService.getData("Accounts/Acc_CashBook_BankRecousillation", jsonData)
                  .subscribe((data: any) => {
                   this.bankreconcilList=data.Table;
+                  this.activeTab = 'UNCLEARED';
                   for (let data of this.bankreconcilList) {
                     data["CLEARANCEDATE"] = (data["CLEARANCEDATE"] != "") ? this._dataService.stringdttoArry(data["CLEARANCEDATE"]) : null;
-                    data["_selected"] = false;
+                    data["_wasCleared"] = !!data["CLEARANCEDATE"];
                     // console.log(this._dataService.convertFromdd_mm_yyyTodd_mmm_yyy(data["clearanceDate"]));
                     // data["clearanceDate"]=this._dataService.convertFromdd_mm_yyyTodd_mmm_yyy(data["clearanceDate"]);
                 }
                   if(data.Table1[0].BALANCE >0) {
-                    this.BalanceDr=data.Table1[0].BALANCE  + " Dr";
+                    this.BalanceDr=this.formatAmt(data.Table1[0].BALANCE)  + " Dr";
                   }
                   else{
-                    this.BalanceCr=(data.Table1[0].BALANCE=="0.00")?"" :Math.abs(data.Table1[0].BALANCE) + " Cr";
+                    this.BalanceCr=(data.Table1[0].BALANCE=="0.00")?"" :this.formatAmt(Math.abs(data.Table1[0].BALANCE)) + " Cr";
                     }
                   if(data.Table2[0].CRAMTNOTREFLECTED >0)
                     {
-                       this.CrNotRef=(data.Table2[0].CRAMTNOTREFLECTED=="0.00")?"" :Math.abs(data.Table2[0].CRAMTNOTREFLECTED) + " Cr";
+                       this.CrNotRef=(data.Table2[0].CRAMTNOTREFLECTED=="0.00")?"" :this.formatAmt(Math.abs(data.Table2[0].CRAMTNOTREFLECTED)) + " Cr";
                     }
                   if(data.Table2[0].DRAMTNOTREFLECTED >0)
                     {
-                      this.DrNotRef=(data.Table2[0].DRAMTNOTREFLECTED=="0.00")?"" :Math.abs(data.Table2[0].DRAMTNOTREFLECTED) + " Dr";
+                      this.DrNotRef=(data.Table2[0].DRAMTNOTREFLECTED=="0.00")?"" :this.formatAmt(Math.abs(data.Table2[0].DRAMTNOTREFLECTED)) + " Dr";
                     }
                   if(data.Table3[0].AMTREFLECTED >0)
                       {
-                         this.DrRef=data.Table3[0].AMTREFLECTED  + " Dr";
+                         this.DrRef=this.formatAmt(data.Table3[0].AMTREFLECTED)  + " Dr";
                       }
                   else
                       {
-                        this.CrRef=(data.Table3[0].AMTREFLECTED=="0.00")?"" :Math.abs(data.Table3[0].AMTREFLECTED) + " Cr";
+                        this.CrRef=(data.Table3[0].AMTREFLECTED=="0.00")?"" :this.formatAmt(Math.abs(data.Table3[0].AMTREFLECTED)) + " Cr";
                       }
                        if(data.Table4[0].OPENINGBALANCE >0)
                       {
-                         this.OpBalDr=data.Table4[0].OPENINGBALANCE  + " Dr";
+                         this.OpBalDr=this.formatAmt(data.Table4[0].OPENINGBALANCE)  + " Dr";
                       }
                   else
                       {
-                        this.OpBalCr=(data.Table4[0].OPENINGBALANCE=="0.00")?"" :Math.abs(data.Table4[0].OPENINGBALANCE) + " Cr";
+                        this.OpBalCr=(data.Table4[0].OPENINGBALANCE=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].OPENINGBALANCE)) + " Cr";
                       }
+                  // Amount Reflected In Bank — Table4.DRAMTREFLECTED / CRAMTREFLECTED,
+                  // shown as separate Dr and Cr totals (same pattern as Amount Not
+                  // Reflected), not netted like Table3.AMTREFLECTED (used for
+                  // Target Bank Balance).
+                  if(data.Table4[0].DRAMTREFLECTED >0)
+                      {
+                        this.DrReflected=(data.Table4[0].DRAMTREFLECTED=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].DRAMTREFLECTED)) + " Dr";
+                      }
+                  if(data.Table4[0].CRAMTREFLECTED >0)
+                      {
+                        this.CrReflected=(data.Table4[0].CRAMTREFLECTED=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].CRAMTREFLECTED)) + " Cr";
+                      }
+                        if(data.Table4[0].CLOSING > 0){
+                           this.closingdrref=(data.Table4[0].CLOSING=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].CLOSING)) + " Dr";
+                         }
+                           if(data.Table4[0].CLOSING1 > 0){
+                           this.closingdrref=(data.Table4[0].CLOSING1=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].CLOSING1)) + " Dr";
+                         }
+                         else {
+                           this.closingcrref=(data.Table4[0].CLOSING1=="0.00")?"" :this.formatAmt(Math.abs(data.Table4[0].CLOSING1)) + " Cr";
+                         }
                   });
+                
                   this.showResult = true;
                   this.loaderService.display(false);
                 } 
@@ -442,49 +518,29 @@ BankRecUpdatewithstring() {
 }
 BankRecUpdate() {
 
-  // ✅ VALIDATION 1: Get Selected Rows
-  const selectedRows = this.bankreconcilList.filter(r => r._selected);
-  
-  if (selectedRows.length === 0) {
-    this._toasterService.toast('warning', 'Warning',
-      'Please select at least one transaction to reconcile.');
-    return;
-  }
-
-  // ✅ VALIDATION 2: Check if selected rows are missing a clearance date
-  const selectedWithoutDate = selectedRows.filter(r =>
-    !r.CLEARANCEDATE || !r.CLEARANCEDATE.formatted
+  // ✅ Submit every Uncleared-tab row that currently has a clearance date typed in —
+  // no separate checkbox to tick. To hold a row back, just leave its date blank.
+  const datedRows = this.unclearedList.filter(r =>
+    r.CLEARANCEDATE && r.CLEARANCEDATE.formatted
   );
-  
-  if (selectedWithoutDate.length > 0) {
-    this._toasterService.toast('warning', 'Warning',
-      `You selected ${selectedWithoutDate.length} transaction(s) without a clearance date. Please enter dates for all selected rows.`);
-    return;
-  }
 
-  // ✅ VALIDATION 3: Check if user entered a date but forgot the checkbox
-  const unselectedWithDate = this.bankreconcilList.filter(r =>
-    !r._selected && r.CLEARANCEDATE && r.CLEARANCEDATE.formatted
-  );
-  
-  if (unselectedWithDate.length > 0) {
-    this._toasterService.toast('warning', 'Warning',
-      `You entered a clearance date for ${unselectedWithDate.length} row(s) but forgot to tick the Match checkbox. Please select them.`);
-    return;
+  if (datedRows.length === 0) {
+    alert('Please enter a clearance date for at least one transaction.');
+    return false; 
   }
 
   // ✅ CONFIRMATION DIALOG
-  if (!confirm(`Are you sure you want to submit reconciliation for ${selectedRows.length} transaction(s)?`)) {
+  if (!confirm(`Are you sure you want to submit reconciliation for ${datedRows.length} transaction(s)?`)) {
     return;
   }
 
   this.loaderService.display(true);
-  
+
   // ✅ BUILD XML STRING (For SQL Server 2008 Bulk Update)
   this.reconsillationstr = '<root>';
 
-  for (let i = 0; i < selectedRows.length; i++) {
-    const row = selectedRows[i];
+  for (let i = 0; i < datedRows.length; i++) {
+    const row = datedRows[i];
 
     // Format the date using your existing data service
     const clearingDate = row.CLEARANCEDATE.formatted;
@@ -513,10 +569,12 @@ BankRecUpdate() {
       // Safely check if the API returned our '100' status from the Stored Procedure
       if (data && data.Table && data.Table.length > 0 && data.Table[0].STATUS === '100') {
         
-        this._toasterService.toast('success', 'Success', data.Table[0].MESSAGE || 'Bank Reconciliation saved successfully.');
+        alert(data.Table[0].MESSAGE || 'Bank Reconciliation saved successfully.');
+        this.SearchData(); 
+        return false;
         
         // Refresh the grid
-        this.SearchData(); 
+      
         
       } else {
         // If SQL Server returned '500' (Error) from the CATCH block
@@ -529,8 +587,9 @@ BankRecUpdate() {
     },
     (error) => {
       this.loaderService.display(false);
-      this._toasterService.toast('error', 'Error', 'Something went wrong. Please try again.');
-      console.error('BankRecUpdate error:', error);
+      alert('Something went wrong. Please try again.');
+      return false;
+      
     }
   );
 }
@@ -543,22 +602,18 @@ BankRecUpdate() {
                     this.FromDate="";
                     this.ToDate="";
                     this.bankreconcilList=[];
+                    this.activeTab = 'UNCLEARED';
                     this.BalanceCr="";
                     this.BalanceDr="";
                     this.CrNotRef="";
                     this.DrNotRef="";
                     this.DrRef="";
                     this.CrRef="";
+                    this.DrReflected="";
+                    this.CrReflected="";
                 }
                 BackToSearch() {
   this.showResult = false;
-}
-autoCheckRow(event: any, row: any) {
-  if (event && event.formatted) {
-    row._selected = true; // Auto-check if date is selected
-  } else {
-    row._selected = false; // Uncheck if date is cleared
-  }
 }
 
     }

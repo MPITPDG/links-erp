@@ -8,6 +8,8 @@ import { uploadbankreconcilRoutingModule} from './uploadbankreconcil.routing'
 import { HttpClientModule } from '@angular/common/http';
 import { UploadBankReconcil } from './bank-reconcil-uploadstatement.component';
 import {UploadBankReconcilSearch} from './bank-reconcil-uploadsearch.component'
+import { BankReconcilShowStatement } from './bank-reconcil-showstatement.component';
+import { BankReconcilStatement } from './bank-reconcil-statement.component';
 @NgModule({
 
     imports: [uploadbankreconcilRoutingModule,
@@ -19,7 +21,7 @@ import {UploadBankReconcilSearch} from './bank-reconcil-uploadsearch.component'
         HttpClientModule
         //SharedModule
     ],
-    declarations: [UploadBankReconcil,UploadBankReconcilSearch
+    declarations: [UploadBankReconcil,UploadBankReconcilSearch,BankReconcilShowStatement,BankReconcilStatement
 
     ],
     providers: [
