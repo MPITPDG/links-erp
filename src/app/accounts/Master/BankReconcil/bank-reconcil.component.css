@@ -50,6 +50,12 @@
     /* overflow-y: auto;
     overflow-x: auto; */
       overflow:auto;
+    /* Always reserve the vertical scrollbar's width, even when it isn't
+       currently needed (e.g. a short Cleared-tab list) — otherwise the
+       table's visible column area shifts by the scrollbar's width only
+       when it happens to be present, breaking any fixed offset that tries
+       to align against it from outside this container. */
+    scrollbar-gutter: stable;
     position:relative;
 }
 
@@ -216,7 +222,7 @@
 
 .br-summary-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-bottom: 0;
 }
@@ -271,6 +277,102 @@
 }
 
 /* ============================= */
+/* VIEW TOGGLE (Uncleared / Cleared) */
+/* ============================= */
+
+.br-view-toggle {
+  display: flex;
+  align-items: flex-end;
+  flex-shrink: 0;
+  position: relative; /* anchor for .br-view-toggle-totals, positioned absolutely below */
+  min-height: 30px;
+}
+
+.br-view-toggle-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.toggle-btn {
+  border: 1px solid #D1D5DB;
+  background: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-btn.active {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #fff;
+}
+
+.toggle-btn .toggle-count {
+  background: rgba(0,0,0,0.08);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 10px;
+}
+
+.toggle-btn.active .toggle-count {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Active-tab Debit/Credit totals, pinned at a fixed offset (735px) from the
+   LEFT edge of .br-view-toggle — the same left edge the table below starts
+   from (Entry No+Date+Type+Party+Chq Type+Cheque No+Cheque Dt = 735px).
+   Anchoring from the left (not the right, via space-between) means this
+   never has to account for the table's vertical scrollbar, which only
+   ever affects the right side. */
+.br-view-toggle-totals {
+  position: absolute;
+  left: 735px;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.br-col-total {
+  width: 85px;
+  text-align: right;
+  padding-right: 12px;
+}
+
+.br-col-total-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+}
+
+.br-col-total-val {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.br-col-total-val.dr {
+  color: #DC2626;
+}
+
+.br-col-total-val.cr {
+  color: #059669;
+}
+
+.br-cleared-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  white-space: nowrap;
+}
+
+/* ============================= */
 /* TABLE */
 /* ============================= */
 
@@ -305,9 +407,13 @@
   font-weight: 700;
 }
 
-/* TABLE */
+/* TABLE — fixed width equal to the exact sum of the declared column widths
+   below (110+70+60+270+75+75+75+85+85+130 = 1035px). Using width:100% here
+   with table-layout:fixed would make the browser proportionally stretch
+   every column to fill the container, drifting the real Debit/Credit
+   position away from the totals row above, which uses these same px values. */
 .br-table {
-  width: 100%;
+  width: 1035px;
   border-collapse: collapse;
   font-size: 11px;
   table-layout: fixed;
@@ -453,78 +559,71 @@
   min-width: 130px;
   width: 130px;
 } */
-/* 1. CHECKBOX (New First Column) */
-.br-table th:nth-child(1), .br-table td:nth-child(1) { 
-  width: 40px; 
-  text-align: center; 
+/* Checkbox column removed — table is now 10 columns, no per-row selection */
+
+/* 1. ENTRY NO */
+.br-table th:nth-child(1), .br-table td:nth-child(1) {
+  width: 110px;
 }
 
-/* 2. ENTRY NO (Shifted from 1 to 2) */
-.br-table th:nth-child(2), .br-table td:nth-child(2) { 
-  width: 110px; 
+/* 2. DATE */
+.br-table th:nth-child(2), .br-table td:nth-child(2) {
+  width: 70px;
+  text-align: center;
 }
 
-/* 3. DATE (Shifted from 2 to 3) */
-.br-table th:nth-child(3), .br-table td:nth-child(3) { 
-  width: 70px; 
-  text-align: center; 
+/* 3. TYPE */
+.br-table th:nth-child(3), .br-table td:nth-child(3) {
+  width: 60px;
+  text-align: left;
 }
 
-/* 4. TYPE (Shifted from 3 to 4) */
-.br-table th:nth-child(4), .br-table td:nth-child(4) { 
-  width: 60px; 
-  text-align: left; 
-}
-
-/* 5. PARTY / REF (Shifted from 4 to 5) */
-.br-table th:nth-child(5), .br-table td:nth-child(5) { 
-  width: 270px; 
+/* 4. PARTY / REF */
+.br-table th:nth-child(4), .br-table td:nth-child(4) {
+  width: 270px;
   white-space: normal; /* Let the name stack on multiple lines */
 }
 
-/* 6. CHQ TYPE (Shifted from 5 to 6) */
-.br-table th:nth-child(6), .br-table td:nth-child(6) { 
-  width: 75px; 
-  text-align: center; 
+/* 5. CHQ TYPE */
+.br-table th:nth-child(5), .br-table td:nth-child(5) {
+  width: 75px;
+  text-align: center;
 }
 
-/* 7. CHEQUE NO (Shifted from 6 to 7) */
-.br-table th:nth-child(7), .br-table td:nth-child(7) { 
-  width: 75px; 
-  text-align: center; 
+/* 6. CHEQUE NO */
+.br-table th:nth-child(6), .br-table td:nth-child(6) {
+  width: 75px;
+  text-align: center;
 }
 
-/* 8. CHEQUE DATE (Shifted from 7 to 8) */
-.br-table th:nth-child(8), .br-table td:nth-child(8) { 
-  width: 75px; 
-  text-align: center; 
+/* 7. CHEQUE DATE */
+.br-table th:nth-child(7), .br-table td:nth-child(7) {
+  width: 75px;
+  text-align: center;
 }
 
-/* 9. DEBIT (Shifted from 8 to 9) */
-.br-table th:nth-child(9), .br-table td:nth-child(9) { 
-  width: 85px; 
-  text-align: right; 
-  padding-right: 12px !important; 
+/* 8. DEBIT */
+.br-table th:nth-child(8), .br-table td:nth-child(8) {
+  width: 85px;
+  text-align: right;
+  padding-right: 12px !important;
 }
 
-/* 10. CREDIT (Shifted from 9 to 10) */
-.br-table th:nth-child(10), .br-table td:nth-child(10) { 
-  width: 85px; 
-  text-align: right; 
-  padding-right: 12px !important; 
+/* 9. CREDIT */
+.br-table th:nth-child(9), .br-table td:nth-child(9) {
+  width: 85px;
+  text-align: right;
+  padding-right: 12px !important;
 }
 
-/* 11. CLEARANCE DATE (Shifted from 10 to 11) */
-.br-table th:nth-child(11), .br-table td:nth-child(11) { 
-  width: 120px; 
+/* 10. CLEARANCE DATE */
+.br-table th:nth-child(10), .br-table td:nth-child(10) {
+  width: 130px;
   overflow: visible !important; /* Required so calendar pop-up escapes cell */
 }
-/* RESPONSIVE */
-@media (max-width: 1200px) {
-  .br-table {
-    min-width: 1200px;
-  }
-}
+/* No responsive min-width override needed — .br-table is now a fixed
+   1035px, and .br-table-wrap's overflow:auto scrolls it horizontally
+   whenever the container is narrower than that. */
 
 /* ============================= */
 /* TEXT */
@@ -566,6 +665,7 @@
 /* ============================= */
 /* ACTION BAR */
 /* ============================= */
+
 .br-action-bar {
   flex-shrink: 0;
   background: rgba(255,255,255,0.95);
@@ -580,7 +680,6 @@
 .br-action-bar .br-btn--ghost {
   margin-left: auto;  /* ← pushes everything after it to the right */
 }
-
 .br-diff-pill {
   margin-right: auto;
   padding: 7px 14px;
@@ -680,6 +779,33 @@
   border-left: none !important;
   border-radius: 0 4px 4px 0 !important;
   background: #F9FAFB !important;
+}
+
+/* CLEAR (✕) BUTTON — undo a wrongly-typed clearance date without a checkbox */
+.br-datepicker--inline .btnclear {
+  height: 24px !important;
+  min-height: 24px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  border: 1px solid #D1D5DB !important;
+  border-left: none !important;
+  border-right: none !important;
+  background: #FEF2F2 !important;
+  color: #DC2626 !important;
+}
+
+.br-datepicker--inline .btnclear:hover {
+  background: #FEE2E2 !important;
+}
+
+.br-datepicker--inline .btnclear span,
+.br-datepicker--inline .btnclear i {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  color: #DC2626 !important;
 }
 
 /* SMALLER TABLE ROW */

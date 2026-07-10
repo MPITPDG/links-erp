@@ -70,16 +70,8 @@
   <div *ngIf="showResult" class="br-result-view">
 
     <!-- TOP BAR -->
-<!-- 
-    <div class="br-topbar">
 
-      
-      <div class="br-topbar-right">
-
-        
-      </div>
-
-    </div> -->
+   
 
     <!-- SUMMARY -->
 
@@ -120,17 +112,42 @@
       <div class="br-summary-card">
 
         <div class="br-summary-label">
-          Balance As per Bank
+          <!-- Company Book Balance -->
+           Balance as per Bank
         </div>
 
         <div class="br-summary-val">
 
           <span class="dr" *ngIf="BalanceDr">
-            {{ BalanceDr }}
+            <!-- {{ BalanceDr }} -->
+              {{closingdrref}}
           </span>
 
           <span class="cr" *ngIf="BalanceCr">
-            {{ BalanceCr }}
+            <!-- {{ BalanceCr }} -->
+              {{closingcrref}}
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- REFLECTED -->
+
+      <div class="br-summary-card">
+
+        <div class="br-summary-label">
+          Amount Reflected In Bank
+        </div>
+
+        <div class="br-summary-val stacked">
+
+          <span class="dr" *ngIf="DrReflected">
+            {{ DrReflected }}
+          </span>
+
+          <span class="cr" *ngIf="CrReflected">
+            {{ CrReflected }}
           </span>
 
         </div>
@@ -142,7 +159,8 @@
       <div class="br-summary-card">
 
         <div class="br-summary-label">
-          Amount Not Reflected In Bank
+          <!-- Unreconciled Amount -->
+           Amount Not Reflected In Bank
         </div>
 
         <div class="br-summary-val stacked">
@@ -165,7 +183,7 @@
 
         <div class="br-summary-label">
           <!-- Target Bank Balance -->
-           Balance As Per Company Book
+           Balance As Per Company Book 
         </div>
 
         <div class="br-summary-val">
@@ -179,9 +197,59 @@
           </span>
 
           <span class="neutral" *ngIf="!DrRef && !CrRef">
-            0.00
+            Pending
           </span>
 
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW TOGGLE -->
+
+    <div class="br-view-toggle">
+
+      <div class="br-view-toggle-tabs">
+
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 'UNCLEARED'"
+          (click)="setActiveTab('UNCLEARED')">
+
+          Uncleared
+          <span class="toggle-count">{{ unclearedList.length }}</span>
+
+        </button>
+
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 'CLEARED'"
+          (click)="setActiveTab('CLEARED')">
+
+          Cleared
+          <span class="toggle-count">{{ clearedList.length }}</span>
+
+        </button>
+
+      </div>
+
+      <!-- Totals for the active tab, anchored at a fixed offset from the LEFT
+           edge of this row (735px = Entry No+Date+Type+Party+ChqType+Cheque No+
+           Cheque Dt column widths) — the same left edge the table below starts
+           from. Anchoring from the left avoids any scrollbar/right-edge
+           dependency entirely, since a vertical scrollbar only ever eats into
+           the right side of .br-table-wrap, never the left. -->
+      <div class="br-view-toggle-totals">
+
+        <div class="br-col-total">
+          <div class="br-col-total-label">Debit</div>
+          <div class="br-col-total-val dr">{{ activeDrTotal | number:'1.2-2' }}</div>
+        </div>
+
+        <div class="br-col-total">
+          <div class="br-col-total-label">Credit</div>
+          <div class="br-col-total-val cr">{{ activeCrTotal | number:'1.2-2' }}</div>
         </div>
 
       </div>
@@ -240,11 +308,7 @@
 
           <thead>
 
-            <tr>
-
-              <th class="num">
-               
-              </th>
+            <tr class="br-col-headers">
 
               <th>
                 Entry No
@@ -296,16 +360,6 @@
               *ngFor="let data of filteredBankreconcilList"
               [class.br-row--receipt]="data.STATUS === 'BR'"
               [class.br-row--payment]="data.STATUS === 'BP'">
-
-              <!-- CHECK -->
-
-              <td class="num">
-
-                <input
-                  type="checkbox"
-                  [(ngModel)]="data._selected">
-
-              </td>
 
               <!-- ENTRY -->
 
@@ -411,12 +465,19 @@
               <td>
 
               <my-date-picker
+  *ngIf="activeTab === 'UNCLEARED'"
   name="dtbld_{{ data.ENTRYNO }}"
   [options]="myDatePickerOptions"
   [(ngModel)]="data.CLEARANCEDATE"
-   (dateChanged)="autoCheckRow($event, data)"
   class="form-control br-datepicker br-datepicker--inline">
 </my-date-picker>
+
+<span
+  *ngIf="activeTab === 'CLEARED'"
+  class="br-cleared-text">
+  {{ data.CLEARANCEDATE?.formatted }}
+</span>
+
               </td>
 
             </tr>
@@ -430,6 +491,7 @@
     </div>
 
     <!-- ACTION BAR -->
+
   <div class="br-action-bar">
 
   <!-- ✅ LEFT SIDE — Back button -->
@@ -439,7 +501,7 @@
 
   <!-- ✅ LEFT SIDE — Records count -->
   <span class="br-record-chip">
-    {{ bankreconcilList.length }} Records
+    {{ filteredBankreconcilList.length }} Records
   </span>
 
   <!-- ✅ Diff pill — also left side -->
@@ -453,7 +515,11 @@
     <i class="fa fa-ban"></i> Reset
   </button>
 
-  <button class="br-btn br-btn--submit" type="button" (click)="BankRecUpdate()">
+  <button
+    *ngIf="activeTab === 'UNCLEARED'"
+    class="br-btn br-btn--submit"
+    type="button"
+    (click)="BankRecUpdate()">
     <i class="fa fa-check-circle"></i> Submit Reconciliation
   </button>
 
