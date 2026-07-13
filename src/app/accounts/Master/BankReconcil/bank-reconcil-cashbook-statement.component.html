@@ -4,7 +4,7 @@
   <!-- SEARCH -->
   <!-- ========================================================= -->
 
-  <div class="br-card search-card-clean">
+  <div class="br-card search-card-clean" *ngIf="!showResult">
     <div class="clean-row-layout">
 
       <!-- BANK ACCOUNT -->
@@ -73,7 +73,7 @@
   <!-- RESULT -->
   <!-- ========================================================= -->
 
-  <div *ngIf="bankpayList.length > 0 || bankrecList.length > 0" class="br-result-view">
+  <div *ngIf="showResult" class="br-result-view">
 
     <!-- RECONCILIATION SUMMARY -->
 
@@ -243,6 +243,13 @@
     <!-- EXPORT -->
 
     <div class="br-action-bar">
+      <button
+        class="br-back-btn"
+        type="button"
+        (click)="BackToSearch()">
+        <i class="fa fa-arrow-left"></i>
+        Back To Search
+      </button>
       <button class="br-btn br-btn--export" type="button" (click)="ExportOutstand()">
         <i class="fa fa-file-excel-o"></i> Export Outstanding
       </button>

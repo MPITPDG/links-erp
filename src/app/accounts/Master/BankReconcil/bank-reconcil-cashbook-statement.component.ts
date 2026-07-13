@@ -96,6 +96,7 @@ import { BankReconcilCashbookStatementExportService } from './bank-reconcil-cash
     rptopbal:any;
     lblclbal:any;
     lbldiff:any;
+    showResult = false;
     constructor(private _dataService: DataService,
         private _toasterService: ToastCommonService,
         private loaderService: LoaderService,
@@ -198,6 +199,7 @@ import { BankReconcilCashbookStatementExportService } from './bank-reconcil-cash
                     this.lblOpBal=this.OpBal+this.DrBalance-this.CrBalance;
                     this.lblclbal=this.lblOpBal + this.CurrentDrBal - this.CurrentCrbal;
                     this.lbldiff=this.BankBalance - this.lblclbal;
+                    this.showResult = true;
                 });
                 this.OutstandingData();
                 this.loaderService.display(false);
@@ -363,5 +365,10 @@ import { BankReconcilCashbookStatementExportService } from './bank-reconcil-cash
                  this.tbl10 = [];
                  this.tbl11 = [];
                  this.tbl12 = [];
+                 this.showResult = false;
+               }
+
+               BackToSearch() {
+                 this.showResult = false;
                }
         }
