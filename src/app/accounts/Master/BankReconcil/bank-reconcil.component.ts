@@ -6,6 +6,7 @@ import { LoaderService } from '../../../shared/service/loader.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IMyDpOptions } from 'mydatepicker';
+import { BankReconcilAddEditExportService } from './bank-reconcil-addedit-export.service';
 
 @Component({
     selector: 'app-BankReconcil',
@@ -102,7 +103,8 @@ import { IMyDpOptions } from 'mydatepicker';
         private _activatedRoute: ActivatedRoute,private _router:Router,
         private _loginService: LoginService,
         private _loaderService: LoaderService,
-      
+        private _exportService: BankReconcilAddEditExportService,
+
       ) { }
     //   ngOnChanges() {
     //     for (let data of this.bankreconcilList) {
@@ -614,6 +616,20 @@ BankRecUpdate() {
                 }
                 BackToSearch() {
   this.showResult = false;
+}
+
+// Exports every entry in the current search result (both Uncleared and
+// Cleared, BR and BP) — matches the legacy "Bank Reconciliation Statement"
+// .xls report, not just the currently active tab.
+ExportExcel() {
+  if (!this.bankreconcilList || this.bankreconcilList.length === 0) {
+    this._toasterService.toast('warning', 'warning', 'No data to export.');
+    return;
+  }
+  const login = this._loginService.getLogin()[0];
+  const companyLine = `${login.CMPNAME || ''} - ${login.CITYNAME || ''}`;
+  const period = `From ${this.FromDate} To ${this.ToDate}`;
+  this._exportService.export(companyLine, period, this.bankreconcilList, 'BankReconciliationStatement');
 }
 
     }

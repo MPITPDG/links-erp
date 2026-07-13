@@ -1,6 +1,12 @@
+/* 140px = this app's actual fixed shell chrome (55-65px header + 22px
+   footer + ~24px breadcrumb overlap, measured directly via
+   getBoundingClientRect on the live app — see the same fix on the
+   Cashbook Statement page). The previous -95px guess left ~45px too
+   little headroom, so this page's content pushed past the viewport and
+   forced the browser's own outer/window scrollbar. */
 :host {
     display: block;
-    height: calc(100vh - 95px);
+    height: calc(100vh - 140px);
     overflow: hidden;
 }
 
@@ -203,6 +209,17 @@
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
+}
+
+.br-btn--export {
+  height: 30px;
+  background: #059669;
+  color: #fff;
+  font-size: 11px;
+}
+
+.br-btn--export:hover {
+  background: #047857;
 }
 
 /* ============================= */
