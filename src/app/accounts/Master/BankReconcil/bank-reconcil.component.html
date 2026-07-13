@@ -504,6 +504,11 @@
     {{ filteredBankreconcilList.length }} Records
   </span>
 
+  <!-- ✅ LEFT SIDE — Export to Excel -->
+  <button class="br-btn br-btn--export" type="button" (click)="ExportExcel()">
+    <i class="fa fa-file-excel-o"></i> Export To Excel
+  </button>
+
   <!-- ✅ Diff pill — also left side -->
   <!-- <div class="br-diff-pill" [ngClass]="isDifferenceZero ? 'ok' : 'warn'">
     Difference : {{ differenceLabel }}
