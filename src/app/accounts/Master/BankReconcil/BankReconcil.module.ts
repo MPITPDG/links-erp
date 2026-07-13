@@ -7,6 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { BankReconcilRoutingModule } from './BankReconcil.routing'; 
 import { BankReconcilComponent } from './bank-reconcil.component';
 import {BankReconcilStatementComponent  } from './bank-reconcil-rpt.component';
+import { BankReconcilCashbookStatementComponent } from './bank-reconcil-cashbook-statement.component';
 import {SharedModule} from '../../../shared/shared.module'
 @NgModule({
     imports: [BankReconcilRoutingModule,
@@ -17,9 +18,9 @@ import {SharedModule} from '../../../shared/shared.module'
         NgSelectModule,
         SharedModule
     ],
-    declarations: [ 
-        BankReconcilComponent,BankReconcilStatementComponent
-        
+    declarations: [
+        BankReconcilComponent,BankReconcilStatementComponent,BankReconcilCashbookStatementComponent
+
     ],
     providers: [
     ],
