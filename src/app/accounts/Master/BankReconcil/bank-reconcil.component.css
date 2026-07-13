@@ -413,7 +413,7 @@
    every column to fill the container, drifting the real Debit/Credit
    position away from the totals row above, which uses these same px values. */
 .br-table {
-  width: 1035px;
+  width: 100%;
   border-collapse: collapse;
   font-size: 11px;
   table-layout: fixed;
