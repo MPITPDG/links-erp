@@ -10,8 +10,10 @@ import { ClientwiseIncomeComponent } from './clientwiseincome.component';
 import { ClientSupplierActWiseList } from './clientsuppactwiseList.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { GenActStatementAllBranch } from './genactstmt.component';
+import { ProfitandLossStmtComponent } from './profitandlossstmt.component';
+import { BalSheetStmtComponent } from './balsheetstmt.component';
 @NgModule({
-  declarations: [ ClientwiseIncomeComponent,ClientSupplierActWiseList,GenActStatementAllBranch],
+  declarations: [ ClientwiseIncomeComponent,ClientSupplierActWiseList,GenActStatementAllBranch,ProfitandLossStmtComponent,BalSheetStmtComponent],
   imports: [
     CommonModule,
     ActFinalizationRoutingModule, FormsModule,
