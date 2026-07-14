@@ -42,3 +42,12 @@ Thumbs.db
 *.rar
 *.zip
 *.7z
+
+# Build / publish output (deployed manually, not tracked in git)
+/publish
+
+# DB backup / restore scripts (never push backups)
+BACKUP_*.sql
+*_BACKUP_*.sql
+*_bak_*.sql
+*.bak
