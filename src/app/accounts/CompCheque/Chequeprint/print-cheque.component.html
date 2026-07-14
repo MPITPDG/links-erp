@@ -81,7 +81,7 @@
                         <td><span class="col-form-span-label">{{obj.RequestedBy}}</span></td>
                         <td><span class="col-form-span-label">{{obj.ENTRYDT}}</span></td>
                         <!-- <td><span class="col-form-span-label">{{obj.BANKREFNO}}</span></td> -->
-                        <td class="col-form-span-label"> <input [(ngModel)]="obj.BANKREFNO"  (change)="getbankrefno(obj.ENTRYNO,obj.BANKREFNO)" *ngIf="obj.CHEQUETYPE!=''" type="text" maxlenght="40" autofocus class="form-control width150">
+                        <td class="col-form-span-label"> <input [(ngModel)]="obj.BANKREFNO"  (change)="getbankrefno(obj.ENTRYNO,obj.BANKREFNO)" [disabled]="obj.PRINTSTATUS=='Not Authorised'" *ngIf="obj.CHEQUETYPE!=''" type="text" maxlenght="40" autofocus class="form-control width150">
                             <span [ngClass]="{'class1':StartCheck=='Not Available.', 'class2':StartCheck!='Not Available.'}"  *ngIf="obj.Checked==true && (obj.CHEQUETYPE=='CHQ' || obj.CHEQUETYPE=='')">{{BankRefNo}}</span></td>
                     </tr>
 

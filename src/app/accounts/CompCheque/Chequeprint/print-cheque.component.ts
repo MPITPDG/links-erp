@@ -598,6 +598,14 @@ export class PrintChequeComponent implements OnInit {
   }
   getbankrefno(eno,bno){
     this.newarray=[];
+    // Guard: do NOT allow selecting an un-authorised BP request via the Bank Ref No box.
+    // The checkbox is already disabled for 'Not Authorised' rows; this closes the same
+    // bypass on the Bank Ref No input so unauthorised entries can never be generated.
+    let selrow = this.searvhptintlist.filter((x) => x.ENTRYNO == eno)[0];
+    if (selrow && selrow.PRINTSTATUS == 'Not Authorised') {
+      alert("This BP Request is Not Authorised. It cannot be generated until the accounts authority authorises it.");
+      return;
+    }
     let obj = {
       EntryNo: eno,
       BRefNo:bno
