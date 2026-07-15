@@ -64,7 +64,7 @@ export class BalSheetStmtComponent implements OnInit {
             this.cmpnyname = data.Table[0].cmp_name;
         });
         /* user form rights - form no 441 = Balance Sheet */
-        this._loginService.verifyRights(441, '')
+        this._loginService.verifyRights(435, '')
             .subscribe((data: any) => { this._loginService.checkVerify('View', data); });
     }
 
