@@ -63,7 +63,7 @@ export class ProfitandLossStmtComponent implements OnInit {
             this.cmpnyname = data.Table[0].cmp_name;
         });
         /* user form rights - form no 440 = Profit & Loss Statement */
-        this._loginService.verifyRights(440, '')
+        this._loginService.verifyRights(434, '')
             .subscribe((data: any) => { this._loginService.checkVerify('View', data); });
     }
 
