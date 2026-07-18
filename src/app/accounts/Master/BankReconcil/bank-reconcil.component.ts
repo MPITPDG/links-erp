@@ -96,6 +96,15 @@ import { BankReconcilAddEditExportService } from './bank-reconcil-addedit-export
     closingdrref:string;
     showResult = false;
     activeTab: string = 'UNCLEARED';
+
+    // --- Void ("Not Effected at Bank") state ---
+    showModal_Void: boolean = false;
+    voidRow: any = null;
+    voidReason: string = '';
+    canVoidBank: boolean = false;
+    readonly AGEING_WARN_DAYS = 3;
+    readonly AGEING_CRITICAL_DAYS = 7;
+
      constructor(private _dataService: DataService,
         private _toasterService: ToastCommonService,
         private loaderService: LoaderService,
@@ -179,6 +188,96 @@ import { BankReconcilAddEditExportService } from './bank-reconcil-addedit-export
           this.activeTab = tab;
         }
 
+        // --- Ageing (days uncleared) ---
+        // ENTRYDT arrives as a raw DD/MM/YYYY string (confirmed against the live
+        // usp_Acc_CashBook_BankRecousillation proc — AB.ENTRYDT is selected unconverted,
+        // same format as ACC_BANK.ENTRYDT itself; unlike CLEARANCEDATE, no
+        // stringdttoArry()/date-picker conversion is applied to it anywhere in this file).
+        getAgeingDays(row: any): number {
+          if (!row || !row.ENTRYDT) { return 0; }
+          const parts = (row.ENTRYDT + '').split('/');
+          if (parts.length !== 3) { return 0; }
+          const entryDate = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+          if (isNaN(entryDate.getTime())) { return 0; }
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          entryDate.setHours(0, 0, 0, 0);
+          const diffMs = today.getTime() - entryDate.getTime();
+          return Math.max(0, Math.round(diffMs / 86400000));
+        }
+
+        getAgeingTier(row: any): 'ok' | 'warn' | 'critical' {
+          const days = this.getAgeingDays(row);
+          if (days >= this.AGEING_CRITICAL_DAYS) { return 'critical'; }
+          if (days >= this.AGEING_WARN_DAYS) { return 'warn'; }
+          return 'ok';
+        }
+
+        // --- Void ("Not Effected at Bank") ---
+        OpenVoidModal(row: any) {
+          if (!row || row.STATUS !== 'BP' || row._wasCleared) { return; }
+          this.voidRow = row;
+          this.voidReason = '';
+          this.showModal_Void = true;
+        }
+
+        closeVoidModal() {
+          this.voidRow = null;
+          this.voidReason = '';
+          this.showModal_Void = false;
+        }
+
+        ConfirmVoid() {
+          if (!this.voidReason || !this.voidReason.trim()) {
+            alert('Please enter a reason for voiding this entry.');
+            return false;
+          }
+          if (!confirm(`Are you sure you want to void ${this.voidRow.ENTRYNO}? This cannot be undone from this screen.`)) {
+            return;
+          }
+
+          // Re-check rights fresh right before the mutation (not just the ngOnInit snapshot) —
+          // a hidden button isn't real access control, and permissions can change mid-session.
+          this._loaderService.display(true);
+          this._loginService.verifyRights('45', '').subscribe((rightsData: any) => {
+            const check = this._loginService.checkVerifyWithMessage('Modify', rightsData);
+            if (!check.Status) {
+              this._loaderService.display(false);
+              this._toasterService.toast('error', 'error', check.ErrorMessage || 'You do not have rights to void this entry.');
+              return;
+            }
+
+            const login = this._loginService.getLogin()[0];
+            const jsonData = {
+              CMPID: login.CMPID,
+              CMPCODE: login.CMPCODE,
+              CITYCODE: login.CITYCODE,
+              USERNAME: login.CMP_USERNAME,
+              ENTRYNO: this.voidRow.ENTRYNO,
+              VOIDREASON: this.voidReason,
+              MAKERIP: login.MAKERIP
+            };
+
+            this._dataService.Common('Accounts/Acc_CashBook_BankVoid_NG', jsonData).subscribe(
+              (data: any) => {
+                this._loaderService.display(false);
+                if (data && data.Table && data.Table.length > 0 && data.Table[0].STATUS === '100') {
+                  this._toasterService.toast('success', 'Success', data.Table[0].STATUSTEXT);
+                  this.closeVoidModal();
+                  this.SearchData();
+                } else {
+                  const msg = (data && data.Table && data.Table[0] && data.Table[0].STATUSTEXT) ? data.Table[0].STATUSTEXT : 'Error voiding entry.';
+                  this._toasterService.toast('warning', 'warning', msg);
+                }
+              },
+              (error) => {
+                this._loaderService.display(false);
+                this._toasterService.toast('error', 'error', 'Something went wrong. Please try again.');
+              }
+            );
+          });
+        }
+
         get differenceLabel(): string {
           const book = this.toNumber(this.BalanceDr) - this.toNumber(this.BalanceCr);
           const bank = this.toNumber(this.DrRef) - this.toNumber(this.CrRef);
@@ -211,11 +310,15 @@ import { BankReconcilAddEditExportService } from './bank-reconcil-addedit-export
         verifyPermission(formId: any, userMode: any) {
           this._loaderService.display(true);
           this._loginService.verifyRights(formId, '')
-          .subscribe((data: any) => {          
+          .subscribe((data: any) => {
           this._loginService.checkVerify(userMode, data);
+          // Visibility for the Void button — a plain synchronous boolean off the same
+          // response, no extra HTTP call. checkVerify() above is page-level (redirects
+          // to access-denied on failure) so it can't be reused to gate a single button.
+          this.canVoidBank = this._loginService.returnRights('Modify', data, this._loginService.getLogin()[0].ROLETYPE);
           this._loaderService.display(false);
                 });
-            } 
+            }
 
         FillAccount(){
           const jsonBank= {

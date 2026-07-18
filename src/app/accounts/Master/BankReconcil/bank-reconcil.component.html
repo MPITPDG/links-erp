@@ -350,6 +350,14 @@
                 Clearance Date
               </th>
 
+              <th *ngIf="activeTab === 'UNCLEARED'">
+                Ageing
+              </th>
+
+              <th *ngIf="activeTab === 'UNCLEARED' && canVoidBank">
+                Action
+              </th>
+
             </tr>
 
           </thead>
@@ -359,7 +367,9 @@
             <tr
               *ngFor="let data of filteredBankreconcilList"
               [class.br-row--receipt]="data.STATUS === 'BR'"
-              [class.br-row--payment]="data.STATUS === 'BP'">
+              [class.br-row--payment]="data.STATUS === 'BP'"
+              [class.br-row--aged-warn]="activeTab === 'UNCLEARED' && getAgeingTier(data) === 'warn'"
+              [class.br-row--aged-critical]="activeTab === 'UNCLEARED' && getAgeingTier(data) === 'critical'">
 
               <!-- ENTRY -->
 
@@ -480,6 +490,26 @@
 
               </td>
 
+              <!-- AGEING -->
+
+              <td *ngIf="activeTab === 'UNCLEARED'">
+                <span class="br-diff-pill" [ngClass]="getAgeingTier(data)">
+                  {{ getAgeingDays(data) }}d
+                </span>
+              </td>
+
+              <!-- VOID ACTION -->
+
+              <td *ngIf="activeTab === 'UNCLEARED' && canVoidBank">
+                <button
+                  class="br-btn br-btn--danger"
+                  type="button"
+                  *ngIf="data.STATUS === 'BP'"
+                  (click)="OpenVoidModal(data)">
+                  <i class="fa fa-ban"></i> Void
+                </button>
+              </td>
+
             </tr>
 
           </tbody>
@@ -532,4 +562,49 @@
 
   </div>
 
+</div>
+
+<!-- ========================================================= -->
+<!-- VOID MODAL — plain Bootstrap show/hide, matches the app-wide -->
+<!-- manual-modal convention (e.g. showModal_TDS in req-bankpayment) -->
+<!-- rather than ngbModal/bsModal. -->
+<!-- ========================================================= -->
+
+<div class="modal" [style.display]="showModal_Void ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="card-header formheading">
+        <strong>Void — Not Effected at Bank</strong>
+      </div>
+
+      <div class="modal-body">
+
+        <p>
+          Entry <b>{{ voidRow?.ENTRYNO }}</b> —
+          {{ (voidRow?.DRAMT || voidRow?.CRAMT) | number:'1.2-2' }}
+        </p>
+
+        <label>Reason <span class="br-req">*</span></label>
+        <textarea
+          class="form-control"
+          rows="4"
+          maxlength="500"
+          [(ngModel)]="voidReason"
+          placeholder="Why was this entry never effected at the bank?">
+        </textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="br-btn br-btn--ghost" type="button" (click)="closeVoidModal()">
+          Cancel
+        </button>
+        <button class="br-btn br-btn--danger" type="button" (click)="ConfirmVoid()">
+          Confirm Void
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

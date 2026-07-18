@@ -222,6 +222,15 @@
   background: #047857;
 }
 
+.br-btn--danger {
+  background: #DC2626;
+  color: #fff;
+}
+
+.br-btn--danger:hover {
+  background: #B91C1C;
+}
+
 /* ============================= */
 /* TOPBAR */
 /* ============================= */
@@ -638,9 +647,30 @@
   width: 130px;
   overflow: visible !important; /* Required so calendar pop-up escapes cell */
 }
-/* No responsive min-width override needed — .br-table is now a fixed
-   1035px, and .br-table-wrap's overflow:auto scrolls it horizontally
-   whenever the container is narrower than that. */
+
+/* 11. AGEING (Uncleared tab only) */
+.br-table th:nth-child(11), .br-table td:nth-child(11) {
+  width: 80px;
+  text-align: center;
+}
+
+/* 12. VOID ACTION (Uncleared tab, canVoidBank only) */
+.br-table th:nth-child(12), .br-table td:nth-child(12) {
+  width: 90px;
+  text-align: center;
+}
+
+/* No responsive min-width override needed — .br-table-wrap's overflow:auto
+   scrolls it horizontally whenever the container is narrower than the
+   combined column widths (extra ~170px now that Ageing + Action exist). */
+
+.br-row--aged-warn td {
+  background: #FFFBEB;
+}
+
+.br-row--aged-critical td {
+  background: #FEF2F2;
+}
 
 /* ============================= */
 /* TEXT */
@@ -714,6 +744,14 @@
   background: #FEF3C7;
   color: #92400E;
 }
+
+.br-diff-pill.critical {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+/* .ok reuses the existing green rule above (line ~708) - do not redefine it here,
+   that would create a duplicate selector where the later one silently wins. */
 
 /* ============================= */
 /* RESPONSIVE */
