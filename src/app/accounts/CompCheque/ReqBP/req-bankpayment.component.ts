@@ -530,7 +530,10 @@ export class ReqBankpaymentComponent implements OnInit {
     }
   }
 
+  isSaving: boolean = false; // FIX: double-click guard for Submit
   Add_Main() {
+    // FIX: ignore repeat clicks while a save is already in progress
+    if (this.isSaving) { return false; }
 
     if (this.ChequeType == "" || this.ChequeType == "0") {
       alert('Please select NOT OVER / PAY ORDER / DD / NEFT / RTGS ! \n');
@@ -599,9 +602,11 @@ export class ReqBankpaymentComponent implements OnInit {
 
 
 
+    this.isSaving = true; // FIX: block further clicks until the save round-trip completes
+    this.loaderService.display(true);
     this._dataService.Common("Accounts/ACC_BRBPCRCPCE_IU_NG", jsonmaster)
       .subscribe((data: any) => {
-
+        this.isSaving = false;
 
         if (data.Table1 != undefined) {
           if (data.Table[0].STATUS  == "100") {
@@ -610,12 +615,22 @@ export class ReqBankpaymentComponent implements OnInit {
             this.loaderService.display(false);
             this.ResetMain();
           }
+          else {
+            // FIX: was silently ignored before - show the server message and release the loader
+            this._toasterService.toast("warning", "warning", data.Table[0].STATUSTEXT);
+            this.loaderService.display(false);
+          }
         }
         else {
 
           this._toasterService.toast("warning", "warning", data.Table[0].STATUSTEXT);
           this.loaderService.display(false);
         }
+      }, (err: any) => {
+        // FIX: release the guard on HTTP failure so the user can retry
+        this.isSaving = false;
+        this.loaderService.display(false);
+        this._toasterService.toast("warning", "warning", "Save failed. Please check and try again.");
       });
   }
   ResetMain() {
